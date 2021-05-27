@@ -138,179 +138,66 @@ def _county_2010_2019():
         reset_index(drop=True)
 
 
-# todo: these functions can be combined. cleanup
-#   The first four are identical other than the labels and url.
-def _state_1900_1909():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st0009ts.txt').text.split('\n')
+## 1900 - 2000 code
+def _format(df, astype_arg=None, query_arg=None, format_pop=True):
+    df = df.astype(astype_arg) if astype_arg else df
+    df = df.query(query_arg) if query_arg else df
 
-    return pd.DataFrame([line.split() for line in lines[23: 72]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1900, 1906)))). \
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[82:-1]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1906, 1910)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
+    return df.reset_index(drop=False).\
         assign(
-            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000,
+            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000 if format_pop else x['POP'],
             region=lambda x: x['region'].map(c.abb_name_dic),
             fips=lambda x: x['region'].map(c.all_name_fips_dic)
         ) \
         [['fips', 'region', 'time', 'POP']]
 
 
-def _state_1910_1919():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st1019ts_v2.txt').text.split('\n')
+def _get_data(year, url_code, lrange, mid=6, end=10, cols1=['region'], cols2=['region']):
+    base_url = 'https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh'
+    lines = requests.get(f'{base_url}/{url_code}.txt').text.split('\n')
 
-    return pd.DataFrame([line.split() for line in lines[23: 72]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1910, 1916)))). \
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[82:-1]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1916, 1920)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        assign(
-            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000,
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
-
-
-def _state_1920_1929():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st2029ts.txt').text.split('\n')
-
-    return pd.DataFrame([line.split() for line in lines[23: 72]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1920, 1926)))). \
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[82:-1]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1926, 1930)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        assign(
-            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000,
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
-
-
-def _state_1930_1939():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st3039ts.txt').text.split('\n')
-
-    return pd.DataFrame([line.split() for line in lines[23: 72]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1930, 1936)))). \
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[82:-1]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1936, 1940)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        assign(
-            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000,
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
-
-
-def _state_1940_1949():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st4049ts.txt').text.split('\n')
-
-    return pd.DataFrame([line.split() for line in lines[21: 70]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1940, 1946)))). \
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[79:-1]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1946, 1950)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        assign(
-            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000,
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
-
-
-
-def _state_1950_1959():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st5060ts.txt').text.split('\n')
-
-    return pd.DataFrame([line.split() for line in lines[27: 78]], columns=['region', 'census'] + list(map(lambda x: f'POP{x}', range(1950, 1955)))). \
-            drop('census', 1).\
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[92:-3]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1955, 1961)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        query('time < 1960'). \
-        assign(
-            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000,
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
-
-
-
-def _state_1960_1969():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st6070ts.txt').text.split('\n')
-
-    return pd.DataFrame([line.split() for line in lines[24: 75]], columns=['region', 'census'] + list(map(lambda x: f'POP{x}', range(1960, 1965)))). \
-            drop('census', 1).\
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[86:-1]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1965, 1971)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        query('time < 1970'). \
-        assign(
-            POP=lambda x: x['POP'].replace(',', '', regex=True).astype(int) * 1000,
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
-
-
-def _state_1970_1979():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st7080ts.txt').text.split('\n')
-
-    return pd.DataFrame([line.split() for line in lines[14: 65]], columns=['id', 'region'] + list(map(lambda x: f'POP{x}', range(1970, 1976)))). \
-            drop('id', 1).\
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
+    return pd.DataFrame(
+        [line.split() for line in lines[lrange[0][0]: lrange[0][1]]], 
+        columns=cols1 + list(map(lambda x: f'POP{x}', range(year, year + mid)))
+        ).\
+        pipe(pd.wide_to_long, 'POP', i='region', j='time').\
         append(
-            pd.DataFrame([line.split() for line in lines[67: -8]], columns=['id', 'region'] + list(map(lambda x: f'POP{x}', range(1976, 1981)))). \
-                drop('id', 1). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        astype({'POP': 'int'}).\
-        query('time < 1980'). \
-        assign(
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
+            pd.DataFrame(
+                [line.split() for line in lines[lrange[1][0]:lrange[1][1]]], 
+                columns=cols2 + list(map(lambda x: f'POP{x}', range(year + mid, year + end)))
+            ).\
+            pipe(pd.wide_to_long, 'POP', i='region', j='time')
+        )
 
+def _state_1900_1989(year):
+    url_codes = {1900: 'st0009ts', 1910: 'st1019ts_v2', 1920: 'st2029ts', 1930: 'st3039ts',
+        1940: 'st4049ts', 1950: 'st5060ts', 1960: 'st6070ts', 1970: 'st7080ts', 1980: 'st8090ts'} 
 
-def _state_1980_1989():
-    lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1980-1990/state/asrh/st8090ts.txt').text.split('\n')
-
-    return pd.DataFrame([line.split() for line in lines[11: 62]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1980, 1985)))). \
-            pipe(pd.wide_to_long, 'POP', i='region', j='time'). \
-            append(
-            pd.DataFrame([line.split() for line in lines[70: -1]], columns=['region'] + list(map(lambda x: f'POP{x}', range(1985, 1991)))). \
-                pipe(pd.wide_to_long, 'POP', i='region', j='time')
-        ). \
-        reset_index(drop=False). \
-        astype({'POP': 'int'}).\
-        query('time < 1990'). \
-        assign(
-            region=lambda x: x['region'].map(c.abb_name_dic),
-            fips=lambda x: x['region'].map(c.all_name_fips_dic)
-        ) \
-        [['fips', 'region', 'time', 'POP']]
-
+    line_ranges = {
+        **{year : [(23,72), (82,-1)] for year in [1900, 1910, 1920, 1930]},
+        **{
+            1940: [(21, 70), (79,-1)],
+            1950: [(27, 78), (92, -3)],
+            1960: [(24, 75), (86,-1)], 
+            1970: [(14, 65), (67, -8)],
+            1980: [(11, 62), (70, -1)]
+        }
+    }
+    
+    if year in [1900, 1910, 1920, 1930, 1940]:
+        df = _get_data(year, url_codes[year], line_ranges[year]).\
+            pipe(_format)
+    elif year in [1950, 1960]:
+        df = _get_data(year, url_codes[year], line_ranges[year], 5, 11, ['region', 'census']).\
+            pipe(_format, query_arg=f'time < {year + 10}')
+    elif year == 1970:
+        df = _get_data(year, url_codes[year], line_ranges[year], 6, 11, ['id', 'region'], ['id', 'region']).\
+            pipe(_format, astype_arg = {'POP': 'int'}, query_arg=f'time < {year + 10}', format_pop=False)
+    elif year == 1980:
+        df = _get_data(year, url_codes[year], line_ranges[year], 5, 11).\
+            pipe(_format, astype_arg = {'POP': 'int'}, query_arg=f'time < {year + 10}', format_pop=False)
+    
+    return df
 
 def _state_1990_1999():
     lines = requests.get('https://www2.census.gov/programs-surveys/popest/tables/1990-2000/state/totals/st-99-07.txt').text.split('\n')
@@ -429,14 +316,8 @@ def _pep_data_create(region):
             [['fips', 'region', 'time', 'population']]
     elif region == 'state':
         df = pd.concat(
-                [
-                    f() for f in
-                        [
-                            _state_1900_1909, _state_1910_1919, _state_1920_1929, _state_1930_1939, _state_1940_1949,
-                            _state_1950_1959, _state_1960_1969, _state_1970_1979, _state_1980_1989, _state_1990_1999,
-                            _state_2000_2009, _state_2010_2019
-                        ]
-                ],
+                [_state_1900_1989(year) for year in range(1900,1981,10)] + 
+                [f() for f in [_state_1990_1999, _state_2000_2009, _state_2010_2019]],
                 axis=0
             )
     else:

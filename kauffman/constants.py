@@ -1,5 +1,6 @@
 import geonamescache
 from itertools import product
+import os
 
 states = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA",
           "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
@@ -91,17 +92,7 @@ all_fips_name_dic = {
 all_name_fips_dic = dict(map(reversed, all_fips_name_dic.items()))
 
 
-
-
-
-
-
-
-
-
 ###################
-
-import os
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 def filenamer(path):
